@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="20250422173300" author="sandika">
+        <createTable tableName="borrow_record">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="book_id" type="BIGINT"/>
+            <column name="borrow_date" type="${datetimeType}"/>
+            <column name="return_date" type="${datetimeType}"/>
+        </createTable>
+        <dropDefaultValue tableName="borrow_record" columnName="borrow_date" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="borrow_record" columnName="return_date" columnDataType="${datetimeType}"/>
+       <addForeignKeyConstraint baseTableName="borrow_record"
+            baseColumnNames="user_id"
+            referencedTableName="user"
+            referencedColumnNames="id"
+            constraintName="fk_borrow_record_user"/>
+        <addForeignKeyConstraint baseTableName="borrow_record"
+            baseColumnNames="book_id"
+            referencedTableName="books"
+            referencedColumnNames="id"
+            constraintName="fk_borrow_record_book"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="20250422191000" author="sandika">
+        <insert tableName="books">
+            <column name="title" value="The Hobbit"/>
+            <column name="author" value="J.R.R. Tolkien"/>
+            <column name="published_year" valueNumeric="1937"/>
+            <column name="available_copies" valueNumeric="10"/>
+        </insert>
+
+        <insert tableName="books">
+            <column name="title" value="1984"/>
+            <column name="author" value="George Orwell"/>
+            <column name="published_year" valueNumeric="1949"/>
+            <column name="available_copies" valueNumeric="2"/>
+        </insert>
+
+        <insert tableName="books">
+            <column name="title" value="To Kill a Mockingbird"/>
+            <column name="author" value="Harper Lee"/>
+            <column name="published_year" valueNumeric="1960"/>
+            <column name="available_copies" valueNumeric="7"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

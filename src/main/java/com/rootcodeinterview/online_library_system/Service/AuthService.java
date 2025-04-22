@@ -10,4 +10,6 @@ public interface AuthService {
     String register(User user);
 
     AuthResponseDTO login(AuthRequestDTO authRequestDTO);
+
+    User findByName(String username);
 }

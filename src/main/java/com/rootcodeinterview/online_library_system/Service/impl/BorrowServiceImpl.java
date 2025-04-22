@@ -5,11 +5,10 @@ import com.rootcodeinterview.online_library_system.Entity.Book;
 import com.rootcodeinterview.online_library_system.Entity.BorrowRecord;
 import com.rootcodeinterview.online_library_system.Entity.User;
 import com.rootcodeinterview.online_library_system.Exceptions.MainException;
-import com.rootcodeinterview.online_library_system.Exceptions.ResourceNotFoundException;
 import com.rootcodeinterview.online_library_system.Mapper.BorrowRecordMapper;
-import com.rootcodeinterview.online_library_system.Repository.BookRepository;
 import com.rootcodeinterview.online_library_system.Repository.BorrowRecordRepository;
-import com.rootcodeinterview.online_library_system.Repository.UserRepository;
+import com.rootcodeinterview.online_library_system.Service.AuthService;
+import com.rootcodeinterview.online_library_system.Service.BookService;
 import com.rootcodeinterview.online_library_system.Service.BorrowService;
 import org.springframework.stereotype.Service;
 
@@ -20,24 +19,24 @@ import java.util.Map;
 @Service
 public class BorrowServiceImpl implements BorrowService {
     private final BorrowRecordRepository borrowRecordRepository;
-    private final UserRepository userRepository;
-    private final BookRepository bookRepository;
+    private final AuthService authService;
+    private final BookService bookService;
     private final BorrowRecordMapper borrowRecordMapper;
 
-    public BorrowServiceImpl(BorrowRecordRepository borrowRecordRepository, UserRepository userRepository, BookRepository bookRepository, BorrowRecordMapper borrowRecordMapper) {
+    public BorrowServiceImpl(BorrowRecordRepository borrowRecordRepository,
+                             AuthService authService, BookService bookService,
+                             BorrowRecordMapper borrowRecordMapper) {
         this.borrowRecordRepository = borrowRecordRepository;
-        this.userRepository = userRepository;
-        this.bookRepository = bookRepository;
+        this.authService = authService;
+        this.bookService = bookService;
         this.borrowRecordMapper = borrowRecordMapper;
     }
 
     @Override
     public BorrowRecordDTO borrowBook(String username, String bookTitle) {
-        User user = userRepository.findByName(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found", Map.of("username", username)));
+        User user = authService.findByName(username);
 
-        Book book = bookRepository.findByTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found", Map.of("bookTitle", bookTitle)));
+        Book book = bookService.findByTitle(bookTitle);
 
         if (book.getAvailableCopies() < 1)
             throw new MainException(
@@ -52,26 +51,27 @@ public class BorrowServiceImpl implements BorrowService {
         record.setBook(book);
         record.setBorrowDate(Instant.now());
 
-        bookRepository.save(book);
+        bookService.saveEntity(book);
         return borrowRecordMapper.toDto(borrowRecordRepository.save(record));
     }
 
 @Override
     public BorrowRecordDTO returnBook(String username, String bookTitle) {
-        User user = userRepository.findByName(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = authService.findByName(username);
 
-        Book book = bookRepository.findByTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+        Book book = bookService.findByTitle(bookTitle);
 
         BorrowRecord record = borrowRecordRepository.findByUserAndBookAndReturnDateIsNull(user, book)
-                .orElseThrow(() -> new RuntimeException("No active borrow record found"));
+                .orElseThrow(() -> new MainException(
+                        "Borrow record not found",
+                        Map.of("username", username, "bookTitle", bookTitle)
+                ));
 
         record.setReturnDate(Instant.now());
         book.setAvailableCopies(book.getAvailableCopies() + 1);
 
         borrowRecordRepository.save(record);
-        bookRepository.save(book);
+        bookService.saveEntity(book);
 
         return borrowRecordMapper.toDto(record);
     }

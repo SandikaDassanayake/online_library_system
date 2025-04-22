@@ -15,4 +15,8 @@ public interface BookService {
     List<BookDTO> getAvailableBooks();
 
     Page<Book> search(SearchBookRequestDTO requestDTO, Pageable pageRequest);
+
+    Book findByTitle(String bookTitle);
+
+    void saveEntity(Book book);
 }

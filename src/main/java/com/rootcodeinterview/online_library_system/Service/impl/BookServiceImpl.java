@@ -3,6 +3,7 @@ package com.rootcodeinterview.online_library_system.Service.impl;
 import com.rootcodeinterview.online_library_system.DTO.BookDTO;
 import com.rootcodeinterview.online_library_system.DTO.SearchBookRequestDTO;
 import com.rootcodeinterview.online_library_system.Entity.Book;
+import com.rootcodeinterview.online_library_system.Exceptions.ResourceNotFoundException;
 import com.rootcodeinterview.online_library_system.Mapper.BookMapper;
 import com.rootcodeinterview.online_library_system.Repository.BookRepository;
 import com.rootcodeinterview.online_library_system.Service.BookService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -56,5 +58,16 @@ public class BookServiceImpl implements BookService {
         Example<Book> example = Example.of(probe, matcher);
 
         return bookRepository.findAll(example, pageRequest);
+    }
+
+    @Override
+    public Book findByTitle(String bookTitle) {
+        return bookRepository.findByTitleIgnoreCase(bookTitle)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found", Map.of("bookTitle", bookTitle)));
+    }
+
+    @Override
+    public void saveEntity(Book book) {
+        bookRepository.save(book);
     }
 }

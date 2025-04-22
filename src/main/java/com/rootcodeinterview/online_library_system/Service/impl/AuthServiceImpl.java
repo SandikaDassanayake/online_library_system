@@ -4,6 +4,7 @@ package com.rootcodeinterview.online_library_system.Service.impl;
 import com.rootcodeinterview.online_library_system.DTO.AuthRequestDTO;
 import com.rootcodeinterview.online_library_system.DTO.AuthResponseDTO;
 import com.rootcodeinterview.online_library_system.Entity.User;
+import com.rootcodeinterview.online_library_system.Exceptions.ResourceNotFoundException;
 import com.rootcodeinterview.online_library_system.Repository.UserRepository;
 import com.rootcodeinterview.online_library_system.Service.AuthService;
 import com.rootcodeinterview.online_library_system.Service.JwtService;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -49,5 +51,11 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String jwtToken = jwtService.generateToken(userDetails.getUsername());
         return new AuthResponseDTO(jwtToken);
+    }
+
+    @Override
+    public User findByName(String username) {
+        return userRepository.findByName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", Map.of("username", username)));
     }
 }

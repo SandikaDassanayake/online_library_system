@@ -4,6 +4,8 @@ import com.rootcodeinterview.online_library_system.DTO.BorrowRecordDTO;
 import com.rootcodeinterview.online_library_system.Entity.Book;
 import com.rootcodeinterview.online_library_system.Entity.BorrowRecord;
 import com.rootcodeinterview.online_library_system.Entity.User;
+import com.rootcodeinterview.online_library_system.Exceptions.MainException;
+import com.rootcodeinterview.online_library_system.Exceptions.ResourceNotFoundException;
 import com.rootcodeinterview.online_library_system.Mapper.BorrowRecordMapper;
 import com.rootcodeinterview.online_library_system.Repository.BookRepository;
 import com.rootcodeinterview.online_library_system.Repository.BorrowRecordRepository;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BorrowServiceImpl implements BorrowService {
@@ -31,13 +34,16 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public BorrowRecordDTO borrowBook(String username, String bookTitle) {
         User user = userRepository.findByName(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", Map.of("username", username)));
 
         Book book = bookRepository.findByTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found", Map.of("bookTitle", bookTitle)));
 
         if (book.getAvailableCopies() < 1)
-            throw new RuntimeException("No copies available");
+            throw new MainException(
+                    "Book not available",
+                    Map.of("bookTitle", bookTitle, "availableCopies", book.getAvailableCopies())
+            );
 
         book.setAvailableCopies(book.getAvailableCopies() - 1);
 
